@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Chess Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg-color);
+            background-image: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: background 0.8s ease;
+        }
+        
+        html {
+            overflow: hidden;
+        }
+
+        :root {
+            --bg-color: #2d1810;
+            --bg-gradient: radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+                           radial-gradient(circle at 80% 80%, rgba(101, 67, 33, 0.1) 0%, transparent 50%);
+            --light-square: #f0d9b5;
+            --dark-square: #b58863;
+            --piece-color-white: #fff;
+            --piece-color-black: #000;
+            --accent-color: #8b6914;
+        }
+
+        /* Theme Variables */
+        body.theme-ww1 {
+            --bg-color: #3a3a2f;
+            --bg-gradient: radial-gradient(circle at 30% 40%, rgba(80, 70, 50, 0.2) 0%, transparent 60%),
+                           radial-gradient(circle at 70% 70%, rgba(60, 50, 30, 0.2) 0%, transparent 60%);
+            --light-square: #8b8b7a;
+            --dark-square: #4a4a3a;
+            --accent-color: #5c5c4a;
+        }
+
+        body.theme-ww2 {
+            --bg-color: #1a1a1a;
+            --bg-gradient: radial-gradient(circle at 50% 50%, rgba(60, 60, 60, 0.3) 0%, transparent 70%);
+            --light-square: #7a7a7a;
+            --dark-square: #2a2a2a;
+            --accent-color: #4a4a4a;
+        }
+
+        body.theme-modern {
+            --bg-color: #e8e8e8;
+            --bg-gradient: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            --light-square: #ffffff;
+            --dark-square: #b0bec5;
+            --accent-color: #607d8b;
+        }
+
+        body.theme-neon {
+            --bg-color: #0a0a0a;
+            --bg-gradient: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 70%),
+                           radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+            --light-square: #1a1a2e;
+            --dark-square: #16213e;
+            --accent-color: #00ffff;
+        }
+
+        body.theme-medieval {
+            --bg-color: #1c1206;
+            --bg-gradient: radial-gradient(circle at 50% 50%, rgba(139, 90, 43, 0.2) 0%, transparent 70%);
+            --light-square: #d4a76a;
+            --dark-square: #7b4b2a;
+            --accent-color: #cd7f32;
+        }
+
+        body.theme-ocean {
+            --bg-color: #0d1b2a;
+            --bg-gradient: radial-gradient(circle at 30% 40%, rgba(52, 152, 219, 0.15) 0%, transparent 70%),
+                           radial-gradient(circle at 70% 70%, rgba(26, 188, 156, 0.15) 0%, transparent 70%);
+            --light-square: #5dade2;
+            --dark-square: #2874a6;
+            --accent-color: #1abc9c;
+        }
+
+        body.theme-forest {
+            --bg-color: #1a2f1a;
+            --bg-gradient: radial-gradient(circle at 40% 50%, rgba(76, 175, 80, 0.15) 0%, transparent 70%);
+            --light-square: #a8d5a2;
+            --dark-square: #4a7c59;
+            --accent-color: #66bb6a;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Settings Button - Fixed to always show */
+        .settings-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--accent-color);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 3000;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .settings-btn.spinning {
+            animation: settingsSpin 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes settingsSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(0.8); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .settings-icon {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+
+        /* Theme Selector Modal */
+        .theme-selector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            z-index: 2999;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .theme-selector.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .theme-selector h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .theme-option {
+            background: linear-gradient(135deg, var(--opt-color1), var(--opt-color2));
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 30px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-option:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-option.selected {
+            border-color: #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        .theme-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .theme-option:hover::before {
+            left: 100%;
+        }
+
+        .theme-name {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-selector {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .close-selector:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 100;
+        }
+
+        .start-screen.hide {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+            display: none;
+        }
+
+        .chess-title {
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: bold;
+            color: transparent;
+            background: linear-gradient(45deg, #d4af37, #f4e5c3, #d4af37);
+            background-clip: text;
+            -webkit-background-clip: text;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+            margin-bottom: 40px;
+            letter-spacing: 8px;
+            position: relative;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 30px rgba(212, 175, 55, 0.5); }
+            50% { text-shadow: 0 0 50px rgba(212, 175, 55, 0.8), 0 0 80px rgba(212, 175, 55, 0.4); }
+        }
+
+        .title-letter {
+            display: inline-block;
+            animation: letterFloat 3s ease-in-out infinite;
+            animation-delay: calc(var(--i) * 0.1s);
+        }
+
+        @keyframes letterFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .lamp {
+            position: absolute;
+            width: 100px;
+            height: 150px;
+            top: -80px;
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .lamp.lit {
+            opacity: 1;
+            animation: lampSwing 2s ease-in-out infinite;
+        }
+
+        .lamp.fade-out {
+            opacity: 0;
+        }
+
+        @keyframes lampSwing {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .lamp-left { left: 20%; }
+        .lamp-right { right: 20%; }
+
+        .lamp-cord {
+            width: 2px;
+            height: 80px;
+            background: #8b6914;
+            margin: 0 auto;
+        }
+
+        .lamp-bulb {
+            width: 100px;
+            height: 70px;
+            background: radial-gradient(circle, #fff9e6 0%, #d4af37 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            box-shadow: 0 0 50px rgba(255, 249, 230, 0.8);
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 50px;
+        }
+
+        .menu-btn {
+            padding: 20px 60px;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--accent-color), rgba(139, 105, 20, 0.8));
+            border: 3px solid #d4af37;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .menu-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
+            border-color: #f4e5c3;
+        }
+
+        /* Openings Screen */
+        .openings-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(100%);
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 90;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .openings-screen.show {
+            transform: translateY(0);
+        }
+
+        .openings-title {
+            font-size: clamp(2rem, 6vw, 4rem);
+            color: #d4af37;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            letter-spacing: 4px;
+        }
+
+        .openings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1400px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .opening-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .opening-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .opening-card:hover::before {
+            left: 100%;
+        }
+
+        .opening-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            border-color: #d4af37;
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .opening-name {
+            font-size: 1.5rem;
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .opening-category {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .opening-moves {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Opening Detail Screen */
+        .opening-detail {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform: translateY(100%);
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 95;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-y: auto;
+            pointer-events: none;
+        }
+
+        .opening-detail.show {
+            display: flex;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .detail-header {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 30px;
+        }
+
+        .detail-title {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .detail-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .detail-content {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .detail-board-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 600px;
+        }
+
+        .detail-moves {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .moves-list {
+            list-style: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 2;
+        }
+
+        .moves-list li {
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .moves-list li:hover {
+            background: rgba(212, 175, 55, 0.1);
+            padding-left: 15px;
+        }
+
+        .close-detail-btn {
+            margin-top: 30px;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #d4af37, #f4e5c3);
+            border: none;
+            border-radius: 15px;
+            color: #1c1206;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+        }
+
+        .close-detail-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Endgame Screen */
+        .endgame-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(100%);
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 90;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .endgame-screen.show {
+            transform: translateY(0);
+        }
+
+        .endgame-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1400px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .endgame-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .endgame-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            border-color: #d4af37;
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3);
+        }
+
+        .endgame-name {
+            font-size: 1.5rem;
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .endgame-difficulty {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        /* Bot Selection */
+        .bot-selection {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 80;
+            pointer-events: none;
+        }
+
+        .bot-selection.show {
+            display: flex;
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .bot-selection.hide-down {
+            transform: translateY(100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .elo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .elo-label {
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: #d4af37;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .elo-label.hide {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .elo-value {
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .slider-container {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+
+        .elo-slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, #4caf50, #ffeb3b, #f44336);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .elo-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 3px solid #d4af37;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .elo-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .button-group.hide {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .bot-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, var(--accent-color), rgba(139, 105, 20, 0.8));
+            border: 2px solid #d4af37;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .bot-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Chess Container */
+        .chess-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 70;
+            pointer-events: none;
+        }
+
+        .chess-container.show {
+            display: flex;
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chess-container.bounce {
+            animation: containerBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes containerBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.02); }
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+
+        .board-wrapper {
+            position: relative;
+        }
+
+        .chess-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: min(600px, 80vw);
+            height: min(600px, 80vw);
+            border: 5px solid var(--accent-color);
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .square {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .square.light {
+            background: var(--light-square);
+        }
+
+        .square.dark {
+            background: var(--dark-square);
+        }
+
+        .square.valid-move::before {
+            content: '';
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            background: rgba(76, 175, 80, 0.6);
+            border-radius: 50%;
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .square.valid-move.capture::before {
+            width: 90%;
+            height: 90%;
+            background: transparent;
+            border: 4px solid rgba(244, 67, 54, 0.7);
+            border-radius: 50%;
+        }
+
+        .piece {
+            width: 80%;
+            height: 80%;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: grab;
+        }
+
+        .piece:hover {
+            transform: scale(1.1);
+        }
+
+        .piece.moving {
+            animation: pieceMove 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes pieceMove {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(5deg); }
+        }
+
+        .arrow-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--accent-color);
+            border-radius: 20px;
+            padding: 30px;
+            min-width: 280px;
+            opacity: 0;
+            transition: opacity 0.8s ease 0.5s;
+        }
+
+        .turn-indicator {
+            font-size: 1.5rem;
+            color: #d4af37;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        .analysis-section {
+            margin-top: 20px;
+        }
+
+        .analysis-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .analysis-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .analysis-text {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* Custom piece styles for different themes */
+        body.theme-classic .piece svg,
+        body.theme-ww1 .piece svg,
+        body.theme-ww2 .piece svg,
+        body.theme-modern .piece svg,
+        body.theme-medieval .piece svg {
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        body.theme-neon .piece svg {
+            filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6)) drop-shadow(0 0 12px rgba(138, 43, 226, 0.4));
+        }
+
+        body.theme-ocean .piece svg {
+            filter: drop-shadow(0 0 6px rgba(26, 188, 156, 0.5)) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        body.theme-forest .piece svg {
+            filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.4)) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        @media (max-width: 768px) {
+            .game-wrapper {
+                flex-direction: column;
+            }
+
+            .openings-grid,
+            .endgame-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="theme-medieval">
+    <button class="settings-btn" id="settingsBtn">
+        <svg class="settings-icon" viewBox="0 0 24 24">
+            <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+        </svg>
+    </button>
+
+    <div class="theme-selector" id="themeSelector">
+        <h2>🎨 Choose Your Theme</h2>
+        <div class="theme-grid">
+            <div class="theme-option" style="--opt-color1: #2d1810; --opt-color2: #8b6914;" data-theme="classic">
+                <div class="theme-name">♟️ Classic</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #3a3a2f; --opt-color2: #5c5c4a;" data-theme="ww1">
+                <div class="theme-name">🪖 WW1</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #1a1a1a; --opt-color2: #4a4a4a;" data-theme="ww2">
+                <div class="theme-name">⚔️ WW2</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #e8e8e8; --opt-color2: #607d8b;" data-theme="modern">
+                <div class="theme-name">🏙️ Modern</div>
+            </div>
+            <div class="theme-option selected" style="--opt-color1: #1c1206; --opt-color2: #cd7f32;" data-theme="medieval">
+                <div class="theme-name">🏰 Medieval</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #0a0a0a; --opt-color2: #00ffff;" data-theme="neon">
+                <div class="theme-name">💜 Neon</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #0d1b2a; --opt-color2: #1abc9c;" data-theme="ocean">
+                <div class="theme-name">🌊 Ocean</div>
+            </div>
+            <div class="theme-option" style="--opt-color1: #1a2f1a; --opt-color2: #66bb6a;" data-theme="forest">
+                <div class="theme-name">🌲 Forest</div>
+            </div>
+        </div>
+        <button class="close-selector" id="closeThemeSelector">Close</button>
+    </div>
+
+    <div class="container">
+        <div class="start-screen" id="startScreen">
+            <div class="lamp lamp-left" id="lampLeft">
+                <div class="lamp-cord"></div>
+                <div class="lamp-bulb"></div>
+            </div>
+            <h1 class="chess-title" id="chessTitle">CHESS</h1>
+            <div class="lamp lamp-right" id="lampRight">
+                <div class="lamp-cord"></div>
+                <div class="lamp-bulb"></div>
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="playBotsBtn">⚔️ Play Against Bots</button>
+                <button class="menu-btn" id="learnOpeningsBtn">📚 Learn Openings</button>
+                <button class="menu-btn" id="practiceEndgameBtn">♟️ Practice Endgames</button>
+            </div>
+        </div>
+
+        <div class="openings-screen" id="openingsScreen">
+            <h2 class="openings-title">📚 Chess Openings Library</h2>
+            <div class="openings-grid" id="openingsGrid"></div>
+            <button class="close-detail-btn" onclick="closeOpenings()">← Back to Menu</button>
+        </div>
+
+        <div class="opening-detail" id="openingDetail">
+            <div class="detail-header">
+                <h2 class="detail-title" id="detailTitle"></h2>
+                <p class="detail-description" id="detailDescription"></p>
+            </div>
+            <div class="detail-content">
+                <div class="detail-board-container">
+                    <div class="chess-board" id="detailBoard"></div>
+                </div>
+                <div class="detail-moves">
+                    <h3 style="color: #d4af37; margin-bottom: 15px;">📝 Main Line:</h3>
+                    <ol class="moves-list" id="detailMovesList"></ol>
+                </div>
+            </div>
+            <button class="close-detail-btn" onclick="closeOpeningDetail()">← Back to Openings</button>
+        </div>
+
+        <div class="endgame-screen" id="endgameScreen">
+            <h2 class="openings-title">♟️ Endgame Practice</h2>
+            <div class="endgame-grid" id="endgameGrid"></div>
+            <button class="close-detail-btn" onclick="closeEndgame()">← Back to Menu</button>
+        </div>
+
+        <div class="bot-selection" id="botSelection">
+            <div class="elo-container">
+                <div class="elo-label" id="eloLabel">Select Bot Strength</div>
+                <div class="elo-value" id="eloValue">1500</div>
+            </div>
+            <div class="slider-container">
+                <input type="range" min="100" max="3000" value="1500" class="elo-slider" id="eloSlider">
+            </div>
+            <div class="button-group" id="buttonGroup">
+                <button class="bot-btn" id="randomBtn">🎲 Random</button>
+                <button class="bot-btn" id="startGameBtn">▶️ Start Game</button>
+            </div>
+        </div>
+
+        <div class="chess-container" id="chessContainer">
+            <div class="game-wrapper">
+                <div class="board-wrapper">
+                    <canvas class="arrow-canvas" id="arrowCanvas"></canvas>
+                    <div class="chess-board" id="chessBoard"></div>
+                </div>
+                <div class="info-panel" id="infoPanel">
+                    <div class="turn-indicator" id="turnText">Your Turn - White</div>
+                    <div class="analysis-section">
+                        <button class="analysis-btn" id="analysisBtn">Show Analysis</button>
+                        <div class="analysis-text" id="analysisText">Click to see the best move</div>
+                    </div>
+                    <div class="analysis-section" style="margin-top: 20px;">
+                        <button class="analysis-btn" id="backToMenuBtn" style="background: linear-gradient(135deg, #f44336, #e53935);">← Back to Menu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script>
+        const SVG_PIECES = {
+            'K': '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5"><path d="M22.5 11.63V6M20 8h5"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5" fill="#fff" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z" fill="#fff"/><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0"/></g></svg>',
+            'Q': '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5"><circle cx="6" cy="12" r="2.75"/><circle cx="14" cy="9" r="2.75"/><circle cx="22.5" cy="8" r="2.75"/><circle cx="31" cy="9" r="2.75"/><circle cx="39" cy="12" r="2.75"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-14V25L7 14l2 12z" stroke-linecap="butt"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z" stroke-linecap="butt"/><path d="M11.5 30c3.5-1 18.5-1 22 0M12 33.5c6-1 15-1 21 0" fill="none"/></g></svg>',
+            'R': '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5"><path d="M9 39h27v-3H9v3zm3-3v-4h21v4H12zm-1-22V9h4v2h5V9h5v2h5V9h4v5" stroke-linecap="butt"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none" stroke-linejoin="miter"/></g></svg>',
+            'B': '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.35.49-2.32.47-3-.5 1.35-1.46 3-2 3-2zm6-4c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>',
+            'N': '<svg viewBox="0 0 45 45"><g fill="#fff" stroke="#000" stroke-width="1.5"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21"/><path d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.042-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.994-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-1.992 2.5-3c1 0 1 3 1 3"/><path d="M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0zm5.433-9.75a.5 1.5 30 1 1-.866-.5.5 1.5 30 1 1 .866.5z" fill="#000"/></g></svg>',
+            'P': '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>'
+        };
+
+        const BLACK_PIECES = {
+            'k': '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#000" stroke-width="1.5"><path d="M22.5 11.63V6M20 8h5" stroke-linejoin="miter"/><path d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5" fill="#000" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z" fill="#000"/><path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0" fill="none" stroke="#fff"/></g></svg>',
+            'q': '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#000" stroke-width="1.5"><circle cx="6" cy="12" r="2.75"/><circle cx="14" cy="9" r="2.75"/><circle cx="22.5" cy="8" r="2.75"/><circle cx="31" cy="9" r="2.75"/><circle cx="39" cy="12" r="2.75"/><path d="M9 26c8.5-1.5 21-1.5 27 0l2-12-7 11V11l-5.5 13.5-3-15-3 15-5.5-14V25L7 14l2 12z" stroke-linecap="butt" fill="#000"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5-1.5 1.5.5 2.5.5 2.5 6.5 1 16.5 1 23 0 0 0 1.5-1 0-2.5 0 0 .5-1.5-1-2.5-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4-8.5-1.5-18.5-1.5-27 0z" stroke-linecap="butt"/><path d="M11.5 30c3.5-1 18.5-1 22 0M12 33.5c6-1 15-1 21 0" fill="none" stroke="#fff"/></g></svg>',
+            'r': '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#000" stroke-width="1.5"><path d="M9 39h27v-3H9v3zm3-3v-4h21v4H12zm-1-22V9h4v2h5V9h5v2h5V9h4v5" stroke-linecap="butt"/><path d="M34 14l-3 3H14l-3-3"/><path d="M31 17v12.5H14V17" stroke-linecap="butt" stroke-linejoin="miter"/><path d="M31 29.5l1.5 2.5h-20l1.5-2.5"/><path d="M11 14h23" fill="none" stroke-linejoin="miter"/></g></svg>',
+            'b': '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#000" stroke-width="1.5"><path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.35.49-2.32.47-3-.5 1.35-1.46 3-2 3-2zm6-4c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2zM25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z" fill="#000"/><path d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5" stroke="#fff" stroke-linecap="butt" stroke-linejoin="miter"/></g></svg>',
+            'n': '<svg viewBox="0 0 45 45"><g fill="#000" stroke="#000" stroke-width="1.5"><path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21"/><path d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.042-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.994-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-1.992 2.5-3c1 0 1 3 1 3" fill="#000"/><path d="M9.5 25.5a.5.5 0 1 1-1 0 .5.5 0 1 1 1 0zm5.433-9.75a.5 1.5 30 1 1-.866-.5.5 1.5 30 1 1 .866.5z" fill="#fff" stroke="#fff"/><path d="M24.55 10.4l-.45 1.45.5.15c3.15 1 5.65 2.49 7.9 6.75S35.75 29.06 35.25 39l-.05.5h2.25l.05-.5c.5-10.06-.88-16.85-3.25-21.34-2.37-4.49-5.79-6.64-9.19-7.16l-.51-.1z" fill="#000" stroke="none"/></g></svg>',
+            'p': '<svg viewBox="0 0 45 45"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#000" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>'
+        };
+
+        // Chess Openings Database
+        const OPENINGS = [
+            { name: 'Ruy Lopez', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5'], description: 'One of the oldest and most classical openings. White develops the bishop to b5, putting pressure on the knight that defends the e5 pawn.' },
+            { name: 'Italian Game', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4'], description: 'Focuses on rapid development and control of the center. The bishop on c4 targets the vulnerable f7 square.' },
+            { name: 'Sicilian Defense', category: 'Semi-Open', moves: ['e4', 'c5'], description: 'The most popular response to 1.e4. Black immediately fights for control of the d4 square and creates asymmetrical positions.' },
+            { name: 'French Defense', category: 'Semi-Open', moves: ['e4', 'e6'], description: 'A solid defensive system where Black prepares to challenge White\'s center with d5. Leads to strategic, positional battles.' },
+            { name: 'Caro-Kann Defense', category: 'Semi-Open', moves: ['e4', 'c6'], description: 'Similar to the French but allows Black to develop the light-squared bishop. Very solid and reliable opening.' },
+            { name: 'Pirc Defense', category: 'Semi-Open', moves: ['e4', 'd6', 'd4', 'Nf6', 'Nc3', 'g6'], description: 'A hypermodern defense where Black allows White to build a strong center, planning to attack it later.' },
+            { name: 'Queen\'s Gambit', category: 'Closed Game', moves: ['d4', 'd5', 'c4'], description: 'One of the oldest openings. White offers a pawn to gain central control and quick development. Not a true gambit as the pawn is difficult to hold.' },
+            { name: 'King\'s Indian Defense', category: 'Indian Defense', moves: ['d4', 'Nf6', 'c4', 'g6', 'Nc3', 'Bg7'], description: 'Black develops pieces towards the kingside and prepares a pawn storm. Often leads to sharp, attacking games.' },
+            { name: 'Nimzo-Indian Defense', category: 'Indian Defense', moves: ['d4', 'Nf6', 'c4', 'e6', 'Nc3', 'Bb4'], description: 'Black pins the knight and controls the e4 square. One of the most respected defenses against 1.d4.' },
+            { name: 'Grünfeld Defense', category: 'Indian Defense', moves: ['d4', 'Nf6', 'c4', 'g6', 'Nc3', 'd5'], description: 'A hypermodern opening where Black allows White a broad pawn center, intending to undermine it later.' },
+            { name: 'Slav Defense', category: 'Closed Game', moves: ['d4', 'd5', 'c4', 'c6'], description: 'A solid and flexible defense. Black supports the d5 pawn and keeps options open for piece development.' },
+            { name: 'English Opening', category: 'Flank Opening', moves: ['c4'], description: 'A flexible opening that can transpose into many different structures. Controls d5 from the side rather than occupying the center immediately.' },
+            { name: 'Réti Opening', category: 'Flank Opening', moves: ['Nf3'], description: 'A hypermodern opening where White controls the center from a distance with pieces rather than pawns.' },
+            { name: 'Scotch Game', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'd4'], description: 'White immediately challenges the center. Leads to open positions with tactical opportunities.' },
+            { name: 'King\'s Gambit', category: 'Gambit', moves: ['e4', 'e5', 'f4'], description: 'An aggressive romantic opening where White sacrifices a pawn for rapid development and attacking chances.' },
+            { name: 'Queen\'s Gambit Accepted', category: 'Closed Game', moves: ['d4', 'd5', 'c4', 'dxc4'], description: 'Black accepts the gambit pawn. White usually regains the pawn quickly with a better position.' },
+            { name: 'Queen\'s Gambit Declined', category: 'Closed Game', moves: ['d4', 'd5', 'c4', 'e6'], description: 'Black maintains the central pawn, leading to a solid but somewhat cramped position initially.' },
+            { name: 'Alekhine\'s Defense', category: 'Semi-Open', moves: ['e4', 'Nf6'], description: 'Black immediately attacks White\'s e4 pawn with the knight. A provocative hypermodern defense.' },
+            { name: 'Scandinavian Defense', category: 'Semi-Open', moves: ['e4', 'd5'], description: 'Black immediately challenges White\'s e4 pawn. Leads to quick development but the queen may become exposed.' },
+            { name: 'Dutch Defense', category: 'Closed Game', moves: ['d4', 'f5'], description: 'An ambitious defense where Black immediately stakes a claim on the e4 square but weakens the kingside.' },
+            { name: 'London System', category: 'Closed Game', moves: ['d4', 'd5', 'Bf4'], description: 'A solid system for White. Easy to learn and play, with the bishop developed to f4 before e3.' },
+            { name: 'Catalan Opening', category: 'Closed Game', moves: ['d4', 'Nf6', 'c4', 'e6', 'g3'], description: 'Combines ideas from the Queen\'s Gambit and the Réti. The fianchettoed bishop exerts pressure on the long diagonal.' },
+            { name: 'Benoni Defense', category: 'Indian Defense', moves: ['d4', 'Nf6', 'c4', 'c5'], description: 'Black immediately challenges White\'s center from the side. Often leads to sharp, imbalanced positions.' },
+            { name: 'Budapest Gambit', category: 'Gambit', moves: ['d4', 'Nf6', 'c4', 'e5'], description: 'An aggressive counterattacking defense where Black sacrifices a pawn for quick development and initiative.' },
+            { name: 'Benko Gambit', category: 'Gambit', moves: ['d4', 'Nf6', 'c4', 'c5', 'd5', 'b5'], description: 'Black sacrifices a pawn for long-term positional compensation on the queenside.' },
+            { name: 'Vienna Game', category: 'Open Game', moves: ['e4', 'e5', 'Nc3'], description: 'A flexible opening that can lead to various pawn structures. White prepares f4 or develops naturally.' },
+            { name: 'Four Knights Game', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Nc3', 'Nf6'], description: 'Both sides develop knights symmetrically. Leads to balanced, classical positions.' },
+            { name: 'Petrov Defense', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nf6'], description: 'Black mirrors White\'s knight development. A solid but somewhat passive defense.' },
+            { name: 'Two Knights Defense', category: 'Open Game', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Nf6'], description: 'Black develops both knights quickly. Often leads to sharp tactical complications.' },
+            { name: 'Evan\'s Gambit', category: 'Gambit', moves: ['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5', 'b4'], description: 'A romantic gambit where White sacrifices a pawn for rapid development and attacking chances against the king.' },
+            { name: 'Smith-Morra Gambit', category: 'Gambit', moves: ['e4', 'c5', 'd4', 'cxd4', 'c3'], description: 'Against the Sicilian, White sacrifices a pawn for quick development and open lines.' },
+            { name: 'Trompowsky Attack', category: 'Closed Game', moves: ['d4', 'Nf6', 'Bg5'], description: 'An aggressive system where White develops the bishop early, often doubling Black\'s pawns.' },
+            { name: 'Torre Attack', category: 'Closed Game', moves: ['d4', 'Nf6', 'Nf3', 'e6', 'Bg5'], description: 'White develops the bishop to g5, maintaining flexibility in the pawn structure.' },
+            { name: 'Colle System', category: 'Closed Game', moves: ['d4', 'd5', 'Nf3', 'Nf6', 'e3'], description: 'A solid system where White builds a pawn triangle and prepares a central breakthrough.' },
+            { name: 'Stonewall Attack', category: 'Closed Game', moves: ['d4', 'e6', 'e3', 'Nf6', 'Bd3'], description: 'White builds a strong pawn chain with pawns on d4, e3, and f4, often launching a kingside attack.' }
+        ];
+
+        // Endgame Practices
+        const ENDGAMES = [
+            { name: 'King and Pawn vs King', difficulty: 'Beginner', fen: '8/8/8/4k3/8/4P3/4K3/8 w - - 0 1', description: 'Learn the fundamental concepts of pawn endgames and the opposition.' },
+            { name: 'Rook and King vs King', difficulty: 'Beginner', fen: '8/8/8/4k3/8/8/4K3/4R3 w - - 0 1', description: 'Master the basic technique of checkmating with rook and king.' },
+            { name: 'Queen and King vs King', difficulty: 'Beginner', fen: '8/8/8/4k3/8/8/4K3/4Q3 w - - 0 1', description: 'Learn how to efficiently checkmate with queen and king.' },
+            { name: 'Two Bishops Checkmate', difficulty: 'Intermediate', fen: '8/8/8/4k3/8/8/4K3/2B2B2 w - - 0 1', description: 'Practice the technique of checkmating with two bishops.' },
+            { name: 'Bishop and Knight Checkmate', difficulty: 'Advanced', fen: '8/8/8/4k3/8/8/4K3/2BN4 w - - 0 1', description: 'Master one of the most difficult basic checkmates.' },
+            { name: 'Lucena Position', difficulty: 'Intermediate', fen: '1K6/1P1k4/8/8/8/8/5R2/3r4 w - - 0 1', description: 'The most important winning position in rook endgames.' },
+            { name: 'Philidor Position', difficulty: 'Intermediate', fen: '3k4/R7/3PK3/8/8/8/r7/8 b - - 0 1', description: 'Learn the crucial defensive technique in rook endgames.' },
+            { name: 'Opposite Color Bishops', difficulty: 'Intermediate', fen: '8/5k2/8/3B4/3Pp3/4K3/8/5b2 w - - 0 1', description: 'Understand the drawing tendencies of opposite-colored bishops.' },
+            { name: 'Rook vs Pawn', difficulty: 'Intermediate', fen: '8/8/8/8/8/1k6/1p6/1K4R1 w - - 0 1', description: 'Master the techniques of stopping a passed pawn with your rook.' },
+            { name: 'Queen vs Rook', difficulty: 'Advanced', fen: '8/8/8/4k3/8/8/4K3/4Q2r w - - 0 1', description: 'Learn the winning technique when you have a queen versus a rook.' }
+        ];
+
+        // Variables
+        let chess = new Chess();
+        let selectedSquare = null;
+        let validMoves = [];
+        let botElo = 1500;
+        let analysisVisible = false;
+        let currentTheme = 'medieval';
+        let currentOpening = null;
+        let openingChess = null;
+
+        // Elements
+        const startScreen = document.getElementById('startScreen');
+        const openingsScreen = document.getElementById('openingsScreen');
+        const openingDetail = document.getElementById('openingDetail');
+        const endgameScreen = document.getElementById('endgameScreen');
+        const botSelection = document.getElementById('botSelection');
+        const chessContainer = document.getElementById('chessContainer');
+        const lampLeft = document.getElementById('lampLeft');
+        const lampRight = document.getElementById('lampRight');
+        const chessTitle = document.getElementById('chessTitle');
+        const playBotsBtn = document.getElementById('playBotsBtn');
+        const learnOpeningsBtn = document.getElementById('learnOpeningsBtn');
+        const practiceEndgameBtn = document.getElementById('practiceEndgameBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const themeSelector = document.getElementById('themeSelector');
+        const closeThemeSelector = document.getElementById('closeThemeSelector');
+        const eloSlider = document.getElementById('eloSlider');
+        const eloValue = document.getElementById('eloValue');
+        const eloLabel = document.getElementById('eloLabel');
+        const buttonGroup = document.getElementById('buttonGroup');
+        const randomBtn = document.getElementById('randomBtn');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const chessBoard = document.getElementById('chessBoard');
+        const turnText = document.getElementById('turnText');
+        const analysisBtn = document.getElementById('analysisBtn');
+        const analysisText = document.getElementById('analysisText');
+        const infoPanel = document.getElementById('infoPanel');
+        const arrowCanvas = document.getElementById('arrowCanvas');
+        const ctx = arrowCanvas.getContext('2d');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
+
+        // Animate title letters
+        function animateLetters() {
+            const text = 'CHESS';
+            chessTitle.innerHTML = '';
+            text.split('').forEach((letter, i) => {
+                const span = document.createElement('span');
+                span.className = 'title-letter';
+                span.style.setProperty('--i', i);
+                span.textContent = letter;
+                chessTitle.appendChild(span);
+            });
+        }
+
+        // Initialize openings grid
+        function initOpenings() {
+            const grid = document.getElementById('openingsGrid');
+            grid.innerHTML = '';
+            OPENINGS.forEach((opening, index) => {
+                const card = document.createElement('div');
+                card.className = 'opening-card';
+                card.innerHTML = `
+                    <div class="opening-name">${opening.name}</div>
+                    <div class="opening-category">${opening.category}</div>
+                    <div class="opening-moves">${opening.moves.slice(0, 3).join(' ')}</div>
+                `;
+                card.onclick = () => showOpeningDetail(opening);
+                grid.appendChild(card);
+            });
+        }
+
+        // Initialize endgames grid
+        function initEndgames() {
+            const grid = document.getElementById('endgameGrid');
+            grid.innerHTML = '';
+            ENDGAMES.forEach(endgame => {
+                const card = document.createElement('div');
+                card.className = 'endgame-card';
+                card.innerHTML = `
+                    <div class="endgame-name">${endgame.name}</div>
+                    <div class="endgame-difficulty">Difficulty: ${endgame.difficulty}</div>
+                    <div class="opening-category" style="margin-top: 10px;">${endgame.description}</div>
+                `;
+                card.onclick = () => startEndgamePractice(endgame);
+                grid.appendChild(card);
+            });
+        }
+
+        // Start endgame practice
+        function startEndgamePractice(endgame) {
+            // Load the endgame position
+            chess.load(endgame.fen);
+            selectedSquare = null;
+            validMoves = [];
+            analysisVisible = false;
+            
+            // Slide down the endgame screen and slide up the chess board
+            endgameScreen.classList.remove('show');
+            setTimeout(() => {
+                chessContainer.classList.add('show');
+                infoPanel.style.opacity = '1';
+                turnText.textContent = 'Practice: ' + endgame.name;
+                createBoard();
+                
+                // Setup arrow canvas
+                setTimeout(() => {
+                    const board = document.getElementById('chessBoard');
+                    arrowCanvas.width = board.offsetWidth;
+                    arrowCanvas.height = board.offsetHeight;
+                }, 100);
+                
+                setTimeout(() => {
+                    chessContainer.classList.add('bounce');
+                    setTimeout(() => chessContainer.classList.remove('bounce'), 600);
+                }, 1200);
+            }, 500);
+        }
+
+        // Show opening detail
+        function showOpeningDetail(opening) {
+            currentOpening = opening;
+            openingChess = new Chess();
+            
+            // Play through the opening moves
+            opening.moves.forEach(move => {
+                openingChess.move(move);
+            });
+
+            document.getElementById('detailTitle').textContent = opening.name;
+            document.getElementById('detailDescription').textContent = opening.description;
+            
+            const movesList = document.getElementById('detailMovesList');
+            movesList.innerHTML = '';
+            
+            // Reset chess to show moves step by step
+            const tempChess = new Chess();
+            opening.moves.forEach((move, index) => {
+                const li = document.createElement('li');
+                const moveNum = Math.floor(index / 2) + 1;
+                const color = index % 2 === 0 ? 'White' : 'Black';
+                li.innerHTML = `<strong>${moveNum}${index % 2 === 0 ? '.' : '...'}</strong> ${move} <span style="color: rgba(255,255,255,0.5);">(${color})</span>`;
+                movesList.appendChild(li);
+                tempChess.move(move);
+            });
+
+            createDetailBoard();
+            openingsScreen.classList.remove('show');
+            setTimeout(() => openingDetail.classList.add('show'), 100);
+        }
+
+        // Create detail board
+        function createDetailBoard() {
+            const board = document.getElementById('detailBoard');
+            board.innerHTML = '';
+            const chessBoard = openingChess.board();
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    const piece = chessBoard[row][col];
+                    if (piece) {
+                        const pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        if (piece.color === 'w') {
+                            pieceEl.innerHTML = SVG_PIECES[piece.type.toUpperCase()];
+                        } else {
+                            pieceEl.innerHTML = BLACK_PIECES[piece.type];
+                        }
+                        square.appendChild(pieceEl);
+                    }
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        // Close functions
+        function closeOpenings() {
+            openingsScreen.classList.remove('show');
+            setTimeout(() => startScreen.classList.remove('hide'), 500);
+        }
+
+        function closeOpeningDetail() {
+            openingDetail.classList.remove('show');
+            setTimeout(() => openingsScreen.classList.add('show'), 500);
+        }
+
+        function closeEndgame() {
+            endgameScreen.classList.remove('show');
+            setTimeout(() => startScreen.classList.remove('hide'), 500);
+        }
+
+        // Settings
+        settingsBtn.addEventListener('click', () => {
+            settingsBtn.classList.add('spinning');
+            setTimeout(() => settingsBtn.classList.remove('spinning'), 600);
+            themeSelector.classList.add('show');
+        });
+
+        closeThemeSelector.addEventListener('click', () => {
+            themeSelector.classList.remove('show');
+        });
+
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                currentTheme = option.dataset.theme;
+                document.body.className = 'theme-' + currentTheme;
+            });
+        });
+
+        // Menu buttons
+        learnOpeningsBtn.addEventListener('click', () => {
+            lampLeft.classList.add('lit');
+            lampRight.classList.add('lit');
+            animateLetters();
+            setTimeout(() => {
+                lampLeft.classList.add('fade-out');
+                lampRight.classList.add('fade-out');
+                startScreen.classList.add('hide');
+                setTimeout(() => {
+                    openingsScreen.classList.add('show');
+                }, 400);
+            }, 1400);
+        });
+
+        practiceEndgameBtn.addEventListener('click', () => {
+            lampLeft.classList.add('lit');
+            lampRight.classList.add('lit');
+            animateLetters();
+            setTimeout(() => {
+                lampLeft.classList.add('fade-out');
+                lampRight.classList.add('fade-out');
+                startScreen.classList.add('hide');
+                setTimeout(() => {
+                    endgameScreen.classList.add('show');
+                }, 400);
+            }, 1400);
+        });
+
+        // Simple bot move function
+        function getEngineMove() {
+            const possibleMoves = chess.moves();
+            if (possibleMoves.length === 0) return null;
+            
+            // Simple random move for demonstration
+            const randomIndex = Math.floor(Math.random() * possibleMoves.length);
+            return possibleMoves[randomIndex];
+        }
+
+        // Simple best move function for analysis
+        function getBestMove(depth) {
+            const moves = chess.moves({ verbose: true });
+            if (moves.length === 0) return null;
+            
+            // For demonstration, return first legal move
+            // In a real implementation, this would use minimax or alpha-beta pruning
+            return moves[0];
+        }
+
+        function drawArrow(fromRow, fromCol, toRow, toCol) {
+            const squareSize = arrowCanvas.width / 8;
+            const startX = (fromCol + 0.5) * squareSize;
+            const startY = (fromRow + 0.5) * squareSize;
+            const endX = (toCol + 0.5) * squareSize;
+            const endY = (toRow + 0.5) * squareSize;
+            
+            const angle = Math.atan2(endY - startY, endX - startX);
+            const shortenStart = squareSize * 0.3;
+            const shortenEnd = squareSize * 0.3;
+            
+            const actualStartX = startX + Math.cos(angle) * shortenStart;
+            const actualStartY = startY + Math.sin(angle) * shortenStart;
+            const actualEndX = endX - Math.cos(angle) * shortenEnd;
+            const actualEndY = endY - Math.sin(angle) * shortenEnd;
+            
+            ctx.shadowColor = 'rgba(76, 175, 80, 0.8)';
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(actualStartX, actualStartY);
+            ctx.lineTo(actualEndX, actualEndY);
+            ctx.stroke();
+            
+            const headLength = 30;
+            const headWidth = Math.PI / 6;
+            
+            ctx.beginPath();
+            ctx.moveTo(actualEndX, actualEndY);
+            ctx.lineTo(
+                actualEndX - headLength * Math.cos(angle - headWidth),
+                actualEndY - headLength * Math.sin(angle - headWidth)
+            );
+            ctx.lineTo(
+                actualEndX - headLength * 0.6 * Math.cos(angle),
+                actualEndY - headLength * 0.6 * Math.sin(angle)
+            );
+            ctx.lineTo(
+                actualEndX - headLength * Math.cos(angle + headWidth),
+                actualEndY - headLength * Math.sin(angle + headWidth)
+            );
+            ctx.closePath();
+            ctx.fillStyle = '#4caf50';
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(actualStartX, actualStartY);
+            ctx.lineTo(actualEndX, actualEndY);
+            ctx.stroke();
+        }
+
+        eloSlider.addEventListener('input', (e) => {
+            eloValue.textContent = e.target.value;
+            botElo = parseInt(e.target.value);
+        });
+
+        playBotsBtn.addEventListener('click', () => {
+            lampLeft.classList.add('lit');
+            lampRight.classList.add('lit');
+            animateLetters();
+            setTimeout(() => {
+                lampLeft.classList.add('fade-out');
+                lampRight.classList.add('fade-out');
+                startScreen.classList.add('hide');
+                setTimeout(() => botSelection.classList.add('show'), 400);
+            }, 1400);
+        });
+
+        randomBtn.addEventListener('click', () => {
+            const randomElo = Math.floor(Math.random() * 2901) + 100;
+            eloLabel.classList.add('hide');
+            buttonGroup.classList.add('hide');
+            const startValue = parseInt(eloSlider.value);
+            const duration = 2000;
+            const startTime = Date.now();
+            function animateSlider() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentValue = Math.floor(startValue + (randomElo - startValue) * easeProgress);
+                eloSlider.value = currentValue;
+                eloValue.textContent = currentValue;
+                botElo = currentValue;
+                if (progress < 1) requestAnimationFrame(animateSlider);
+                else setTimeout(startGame, 500);
+            }
+            animateSlider();
+        });
+
+        startGameBtn.addEventListener('click', startGame);
+
+        analysisBtn.addEventListener('click', () => {
+            if (chess.turn() === 'w') {
+                analysisVisible = !analysisVisible;
+                if (analysisVisible) {
+                    const bestMove = getBestMove(4);
+                    if (bestMove) {
+                        const from = typeof bestMove === 'string' ? bestMove.substring(0, 2) : bestMove.from;
+                        const to = typeof bestMove === 'string' ? bestMove.substring(2, 4) : bestMove.to;
+                        const fromRow = 8 - parseInt(from[1]);
+                        const fromCol = from.charCodeAt(0) - 97;
+                        const toRow = 8 - parseInt(to[1]);
+                        const toCol = to.charCodeAt(0) - 97;
+                        analysisText.textContent = `Best: ${from} → ${to}`;
+                        drawArrow(fromRow, fromCol, toRow, toCol);
+                        analysisBtn.textContent = 'Hide Analysis';
+                    }
+                } else {
+                    ctx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+                    analysisText.textContent = 'Click to see the best move';
+                    analysisBtn.textContent = 'Show Analysis';
+                }
+            }
+        });
+
+        backToMenuBtn.addEventListener('click', () => {
+            // Reset game
+            chess = new Chess();
+            selectedSquare = null;
+            validMoves = [];
+            analysisVisible = false;
+            ctx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+            
+            // Hide chess container and show start screen
+            chessContainer.classList.remove('show');
+            infoPanel.style.opacity = '0';
+            
+            setTimeout(() => {
+                startScreen.classList.remove('hide');
+                eloLabel.classList.remove('hide');
+                buttonGroup.classList.remove('hide');
+                lampLeft.classList.remove('lit', 'fade-out');
+                lampRight.classList.remove('lit', 'fade-out');
+            }, 800);
+        });
+
+        function startGame() {
+            botSelection.classList.add('hide-down');
+            setTimeout(() => {
+                chessContainer.classList.add('show');
+                infoPanel.style.opacity = '1';
+                setTimeout(() => {
+                    chessContainer.classList.add('bounce');
+                    setTimeout(() => chessContainer.classList.remove('bounce'), 600);
+                }, 1200);
+            }, 500);
+        }
+
+        function createBoard() {
+            chessBoard.innerHTML = '';
+            const board = chess.board();
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = 'square ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.square = String.fromCharCode(97 + col) + (8 - row);
+                    const piece = board[row][col];
+                    if (piece) {
+                        const pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        if (piece.color === 'w') {
+                            pieceEl.innerHTML = SVG_PIECES[piece.type.toUpperCase()];
+                        } else {
+                            pieceEl.innerHTML = BLACK_PIECES[piece.type];
+                        }
+                        square.appendChild(pieceEl);
+                    }
+                    const squareName = String.fromCharCode(97 + col) + (8 - row);
+                    if (validMoves.includes(squareName)) {
+                        square.classList.add('valid-move');
+                        if (piece) square.classList.add('capture');
+                    }
+                    square.addEventListener('click', () => handleSquareClick(squareName));
+                    chessBoard.appendChild(square);
+                }
+            }
+        }
+
+        function handleSquareClick(square) {
+            // In endgame practice, player is always white
+            if (chess.turn() !== 'w') return;
+            
+            if (selectedSquare) {
+                const move = chess.move({ from: selectedSquare, to: square, promotion: 'q' });
+                if (move) {
+                    const movingPiece = document.querySelector(`[data-square="${selectedSquare}"] .piece`);
+                    if (movingPiece) movingPiece.classList.add('moving');
+                    setTimeout(() => {
+                        selectedSquare = null;
+                        validMoves = [];
+                        createBoard();
+                        if (analysisVisible) {
+                            ctx.clearRect(0, 0, arrowCanvas.width, arrowCanvas.height);
+                            analysisVisible = false;
+                            analysisText.textContent = 'Click to see the best move';
+                            analysisBtn.textContent = 'Show Analysis';
+                        }
+                        if (!chess.game_over()) {
+                            turnText.textContent = 'Opponent Contemplates...';
+                            setTimeout(makeBotMove, 800);
+                        } else endGame();
+                    }, 400);
+                } else {
+                    selectedSquare = square;
+                    validMoves = chess.moves({ square, verbose: true }).map(m => m.to);
+                    createBoard();
+                }
+            } else {
+                const piece = chess.get(square);
+                if (piece && piece.color === 'w') {
+                    selectedSquare = square;
+                    validMoves = chess.moves({ square, verbose: true }).map(m => m.to);
+                    createBoard();
+                }
+            }
+        }
+
+        function makeBotMove() {
+            const move = getEngineMove();
+            if (move) {
+                chess.move(move);
+                createBoard();
+                if (!chess.game_over()) turnText.textContent = 'Your Turn - White';
+                else endGame();
+            }
+        }
+
+        function endGame() {
+            if (chess.in_checkmate()) turnText.textContent = chess.turn() === 'w' ? 'Checkmate - You Lost' : 'Checkmate - You Won!';
+            else if (chess.in_draw()) turnText.textContent = 'Game Drawn';
+            else if (chess.in_stalemate()) turnText.textContent = 'Stalemate';
+        }
+
+        // Initialize
+        animateLetters();
+        initOpenings();
+        initEndgames();
+        createBoard();
+        
+        // Setup arrow canvas
+        window.addEventListener('resize', () => {
+            const board = document.getElementById('chessBoard');
+            arrowCanvas.width = board.offsetWidth;
+            arrowCanvas.height = board.offsetHeight;
+        });
+        setTimeout(() => {
+            const board = document.getElementById('chessBoard');
+            arrowCanvas.width = board.offsetWidth;
+            arrowCanvas.height = board.offsetHeight;
+        }, 100);
+    </script>
+</body>
+</html>
